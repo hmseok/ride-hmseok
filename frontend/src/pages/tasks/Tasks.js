@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import TaskModal from '../../components/TaskModal';
 import { taskAPI, userAPI, projectAPI } from '../../services/api';
+import TaskModal from '../../components/TaskModal';
+import TaskDetailModal from '../../components/TaskDetailModal';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -13,6 +14,7 @@ const Tasks = () => {
   const [departmentFilter, setDepartmentFilter] = useState('ALL');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +25,10 @@ const Tasks = () => {
     filterTasks();
   }, [tasks, searchTerm, statusFilter, departmentFilter]);
 
+  useEffect(() => {
+    console.log('selectedTask 상태 변화:', selectedTask);
+  }, [selectedTask]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -32,41 +38,50 @@ const Tasks = () => {
         projectAPI.getAll()
       ]);
       
+      console.log('로드된 업무 데이터:', tasksData);
+      console.log('로드된 사용자 데이터:', usersData);
+      console.log('로드된 프로젝트 데이터:', projectsData);
+      
       setTasks(tasksData);
       setUsers(usersData);
       setProjects(projectsData);
     } catch (error) {
       console.error('데이터 로드 실패:', error);
-      // 에러 시 목 데이터 사용
+      // 목 데이터 사용
       setTasks([
         {
           id: 1,
-          title: '사용자 인증 시스템 구현',
-          description: 'JWT 기반 사용자 인증 시스템을 구현합니다.',
-          status: 'IN_PROGRESS',
-          priority: 'HIGH',
+          title: '테스트 업무 1',
+          description: '이것은 테스트 업무입니다.',
+          status: 'TODO',
+          priority: 'MEDIUM',
+          department: 'CX_TEAM',
           assigneeId: 1,
           projectId: 1,
-          dueDate: '2024-01-15'
+          dueDate: '2024-12-31',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         },
         {
           id: 2,
-          title: '데이터베이스 설계 검토',
-          description: 'ERD 설계를 검토하고 최적화합니다.',
-          status: 'REVIEW',
-          priority: 'MEDIUM',
+          title: '테스트 업무 2',
+          description: '두 번째 테스트 업무입니다.',
+          status: 'IN_PROGRESS',
+          priority: 'HIGH',
+          department: 'ACCIDENT_TEAM',
           assigneeId: 2,
-          projectId: 2,
-          dueDate: '2024-01-20'
+          projectId: 1,
+          dueDate: '2024-12-30',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         }
       ]);
       setUsers([
-        { id: 1, fullName: '김개발' },
-        { id: 2, fullName: '이디자인' }
+        { id: 1, fullName: '전소현', username: 'jeon', email: 'jeon@example.com', department: 'CX_TEAM' },
+        { id: 2, fullName: '최지광', username: 'choi', email: 'choi@example.com', department: 'ACCIDENT_TEAM' }
       ]);
       setProjects([
-        { id: 1, name: '웹 애플리케이션' },
-        { id: 2, name: '데이터베이스 설계' }
+        { id: 1, name: '테스트 프로젝트', description: '테스트용 프로젝트입니다.' }
       ]);
     } finally {
       setLoading(false);
@@ -236,6 +251,18 @@ const Tasks = () => {
           </select>
         </div>
 
+        {/* 디버깅 정보 */}
+        {selectedTask && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800">
+              <strong>선택된 업무:</strong> {selectedTask.title} (ID: {selectedTask.id})
+            </p>
+            <p className="text-blue-600 text-sm">
+              selectedTask 상태: {JSON.stringify(selectedTask)}
+            </p>
+          </div>
+        )}
+
         {/* 업무 목록 */}
         <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
@@ -245,9 +272,16 @@ const Tasks = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-indigo-600 truncate">
+                        <div
+                          onClick={() => {
+                            console.log('업무 제목 클릭됨!');
+                            console.log('클릭된 업무:', task);
+                            setSelectedTask(task);
+                          }}
+                          className="text-lg font-semibold text-indigo-600 truncate hover:text-indigo-800 cursor-pointer p-2 hover:bg-gray-50 rounded"
+                        >
                           {task.title}
-                        </p>
+                        </div>
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
                             {task.status}
@@ -289,7 +323,7 @@ const Tasks = () => {
           </ul>
         </div>
 
-        {/* 모달 */}
+        {/* 모달들 */}
         <TaskModal
           isOpen={showCreateModal || !!editingTask}
           onClose={() => {
@@ -297,9 +331,26 @@ const Tasks = () => {
             setEditingTask(null);
           }}
           task={editingTask}
-          onSave={editingTask ? handleUpdateTask : handleCreateTask}
+          onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
           users={users}
           projects={projects}
+        />
+
+        <TaskDetailModal
+          isOpen={!!selectedTask}
+          onClose={() => {
+            console.log('TaskDetailModal 닫기 호출');
+            setSelectedTask(null);
+          }}
+          task={selectedTask}
+          users={users}
+          projects={projects}
+          onEdit={(task) => {
+            console.log('TaskDetailModal에서 편집 호출:', task);
+            setSelectedTask(null);
+            setEditingTask(task);
+          }}
+          onDelete={handleDeleteTask}
         />
       </div>
     </div>

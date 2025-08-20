@@ -7,7 +7,10 @@ import Dashboard from './pages/dashboard/Dashboard';
 import Tasks from './pages/tasks/Tasks';
 import Projects from './pages/projects/Projects';
 import Users from './pages/users/Users';
+import Attendance from './pages/attendance/Attendance';
+import Payments from './pages/payments/Payments';
 import Reports from './pages/reports/Reports';
+import MenuManagement from './pages/menu-management/MenuManagement';
 
 // 공통 컴포넌트들
 import Sidebar from './components/Sidebar';
@@ -27,7 +30,10 @@ function App() {
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/payments" element={<Payments />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/menu-management" element={<MenuManagement />} />
             </Routes>
           </main>
         </div>

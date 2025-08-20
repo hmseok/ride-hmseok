@@ -5,7 +5,10 @@ import {
   ClipboardDocumentListIcon,
   FolderIcon,
   UsersIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ClockIcon,
+  CreditCardIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 
 const Sidebar = () => {
@@ -14,7 +17,10 @@ const Sidebar = () => {
     { name: '업무 관리', href: '/tasks', icon: ClipboardDocumentListIcon },
     { name: '프로젝트 관리', href: '/projects', icon: FolderIcon },
     { name: '사용자 관리', href: '/users', icon: UsersIcon },
+    { name: '근태 관리', href: '/attendance', icon: ClockIcon },
+    { name: '결제 관리', href: '/payments', icon: CreditCardIcon },
     { name: '리포트', href: '/reports', icon: ChartBarIcon },
+    { name: '메뉴 관리', href: '/menu-management', icon: Cog6ToothIcon },
   ];
 
   return (

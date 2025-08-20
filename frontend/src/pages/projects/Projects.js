@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import ProjectDetailModal from '../../components/ProjectDetailModal';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [editingProject, setEditingProject] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -15,6 +18,10 @@ const Projects = () => {
     filterProjects();
   }, [projects, searchTerm, statusFilter]);
 
+  useEffect(() => {
+    console.log('selectedProject 상태 변화:', selectedProject);
+  }, [selectedProject]);
+
   const fetchProjects = async () => {
     try {
       // 실제 API 호출로 대체
@@ -23,31 +30,46 @@ const Projects = () => {
           id: 1,
           name: '웹 애플리케이션 개발',
           description: 'React와 Spring Boot를 사용한 웹 애플리케이션 개발',
-          status: 'ACTIVE',
-          createdBy: '김개발',
+          status: 'IN_PROGRESS',
+          priority: 'HIGH',
+          managerName: '김개발',
           startDate: '2024-01-01',
           endDate: '2024-06-30',
-          taskCount: 15
+          taskCount: 15,
+          progress: 60,
+          budget: 50000000,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-15T00:00:00Z'
         },
         {
           id: 2,
           name: '데이터베이스 설계',
           description: 'MySQL을 사용한 데이터베이스 설계 및 최적화',
           status: 'PLANNING',
-          createdBy: '이디자인',
+          priority: 'MEDIUM',
+          managerName: '이디자인',
           startDate: '2024-02-01',
           endDate: '2024-03-31',
-          taskCount: 8
+          taskCount: 8,
+          progress: 20,
+          budget: 20000000,
+          createdAt: '2024-02-01T00:00:00Z',
+          updatedAt: '2024-02-01T00:00:00Z'
         },
         {
           id: 3,
           name: 'API 개발',
           description: 'RESTful API 개발 및 문서화',
-          status: 'ACTIVE',
-          createdBy: '박문서',
+          status: 'IN_PROGRESS',
+          priority: 'HIGH',
+          managerName: '박문서',
           startDate: '2024-01-15',
           endDate: '2024-04-30',
-          taskCount: 12
+          taskCount: 12,
+          progress: 45,
+          budget: 30000000,
+          createdAt: '2024-01-15T00:00:00Z',
+          updatedAt: '2024-01-20T00:00:00Z'
         }
       ];
       setProjects(mockProjects);
@@ -94,6 +116,18 @@ const Projects = () => {
       'CANCELLED': 0
     };
     return statusProgress[project.status] || 0;
+  };
+
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setSelectedProject(null);
+  };
+
+  const handleDeleteProject = (projectId) => {
+    if (window.confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
+      setProjects(projects.filter(p => p.id !== projectId));
+      setSelectedProject(null);
+    }
   };
 
   return (
@@ -143,9 +177,16 @@ const Projects = () => {
             <div key={project.id} className="bg-white overflow-hidden shadow rounded-lg">
               <div className="p-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
+                  <button
+                    onClick={() => {
+                      console.log('프로젝트 제목 클릭됨!');
+                      console.log('클릭된 프로젝트:', project);
+                      setSelectedProject(project);
+                    }}
+                    className="text-lg font-medium text-gray-900 truncate hover:text-indigo-600 cursor-pointer"
+                  >
                     {project.name}
-                  </h3>
+                  </button>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                     {project.status}
                   </span>
@@ -178,7 +219,7 @@ const Projects = () => {
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">생성자: {project.createdBy}</span>
+                    <span className="text-sm text-gray-500">담당자: {project.managerName}</span>
                     <button className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
                       상세보기
                     </button>
@@ -189,6 +230,16 @@ const Projects = () => {
           ))}
         </div>
       </div>
+
+      {/* 프로젝트 상세 모달 */}
+      <ProjectDetailModal
+        isOpen={!!selectedProject}
+        onClose={() => setSelectedProject(null)}
+        project={selectedProject}
+        users={[]}
+        onEdit={handleEditProject}
+        onDelete={handleDeleteProject}
+      />
     </div>
   );
 };
