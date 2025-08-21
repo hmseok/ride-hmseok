@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, EyeIcon, CheckIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { taskAPI } from '../../services/task/taskAPI';
 import { userAPI } from '../../services/user/userAPI';
 import { projectAPI } from '../../services/project/projectAPI';
@@ -13,11 +13,19 @@ const Tasks = () => {
   const [projects, setProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [priorityFilter, setPriorityFilter] = useState('ALL');
   const [departmentFilter, setDepartmentFilter] = useState('ALL');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    todo: 0,
+    inProgress: 0,
+    review: 0,
+    done: 0
+  });
 
   useEffect(() => {
     fetchData();
@@ -25,11 +33,8 @@ const Tasks = () => {
 
   useEffect(() => {
     filterTasks();
-  }, [tasks, searchTerm, statusFilter, departmentFilter]);
-
-  useEffect(() => {
-    console.log('selectedTask 상태 변화:', selectedTask);
-  }, [selectedTask]);
+    updateStats();
+  }, [tasks, searchTerm, statusFilter, priorityFilter, departmentFilter]);
 
   const fetchData = async () => {
     try {
@@ -104,11 +109,26 @@ const Tasks = () => {
       filtered = filtered.filter(task => task.status === statusFilter);
     }
 
+    if (priorityFilter !== 'ALL') {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+
     if (departmentFilter !== 'ALL') {
       filtered = filtered.filter(task => task.department === departmentFilter);
     }
 
     setFilteredTasks(filtered);
+  };
+
+  const updateStats = () => {
+    const stats = {
+      total: tasks.length,
+      todo: tasks.filter(task => task.status === 'TODO').length,
+      inProgress: tasks.filter(task => task.status === 'IN_PROGRESS').length,
+      review: tasks.filter(task => task.status === 'REVIEW').length,
+      done: tasks.filter(task => task.status === 'DONE').length
+    };
+    setStats(stats);
   };
 
   const handleCreateTask = async (taskData) => {
@@ -155,6 +175,21 @@ const Tasks = () => {
     }
   };
 
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const updatedTask = await taskAPI.updateStatus(taskId, newStatus);
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? updatedTask : task
+      ));
+    } catch (error) {
+      console.error('상태 변경 실패:', error);
+      // 에러 시 목 데이터로 수정
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, status: newStatus } : task
+      ));
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'TODO': return 'bg-gray-100 text-gray-800';
@@ -175,6 +210,16 @@ const Tasks = () => {
     }
   };
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'TODO': return <ClockIcon className="h-4 w-4" />;
+      case 'IN_PROGRESS': return <ExclamationTriangleIcon className="h-4 w-4" />;
+      case 'REVIEW': return <EyeIcon className="h-4 w-4" />;
+      case 'DONE': return <CheckIcon className="h-4 w-4" />;
+      default: return <ClockIcon className="h-4 w-4" />;
+    }
+  };
+
   const getUserName = (userId) => {
     const user = users.find(u => u.id === userId);
     return user ? user.fullName : '미지정';
@@ -183,6 +228,12 @@ const Tasks = () => {
   const getProjectName = (projectId) => {
     const project = projects.find(p => p.id === projectId);
     return project ? project.name : '미지정';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '미정';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR');
   };
 
   if (loading) {
@@ -210,6 +261,90 @@ const Tasks = () => {
             <PlusIcon className="h-4 w-4 mr-2" />
             새 업무 생성
           </button>
+        </div>
+
+        {/* 통계 카드 */}
+        <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gray-400 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{stats.total}</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">전체 업무</dt>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gray-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{stats.todo}</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">대기</dt>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{stats.inProgress}</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">진행중</dt>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{stats.review}</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">검토</dt>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{stats.done}</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">완료</dt>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 필터 및 검색 */}
@@ -240,6 +375,17 @@ const Tasks = () => {
             <option value="DONE">완료</option>
           </select>
           <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="ALL">모든 우선순위</option>
+            <option value="LOW">낮음</option>
+            <option value="MEDIUM">보통</option>
+            <option value="HIGH">높음</option>
+            <option value="URGENT">긴급</option>
+          </select>
+          <select
             value={departmentFilter}
             onChange={(e) => setDepartmentFilter(e.target.value)}
             className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -252,18 +398,6 @@ const Tasks = () => {
             <option value="COMMON">공통</option>
           </select>
         </div>
-
-        {/* 디버깅 정보 */}
-        {selectedTask && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">
-              <strong>선택된 업무:</strong> {selectedTask.title} (ID: {selectedTask.id})
-            </p>
-            <p className="text-blue-600 text-sm">
-              selectedTask 상태: {JSON.stringify(selectedTask)}
-            </p>
-          </div>
-        )}
 
         {/* 업무 목록 */}
         <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-md">
@@ -286,7 +420,8 @@ const Tasks = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-                            {task.status}
+                            {getStatusIcon(task.status)}
+                            <span className="ml-1">{task.status}</span>
                           </span>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
                             {task.priority}
@@ -299,10 +434,27 @@ const Tasks = () => {
                         <span className="mx-2">•</span>
                         <span>프로젝트: {getProjectName(task.projectId)}</span>
                         <span className="mx-2">•</span>
-                        <span>마감일: {task.dueDate}</span>
+                        <span>마감일: {formatDate(task.dueDate)}</span>
+                        {task.department && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span>부서: {task.department}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
+                      {/* 상태 변경 드롭다운 */}
+                      <select
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      >
+                        <option value="TODO">대기</option>
+                        <option value="IN_PROGRESS">진행중</option>
+                        <option value="REVIEW">검토</option>
+                        <option value="DONE">완료</option>
+                      </select>
                       <button
                         onClick={() => setEditingTask(task)}
                         className="text-indigo-600 hover:text-indigo-900 p-1"

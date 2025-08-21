@@ -41,6 +41,10 @@
 │   ├── schema.sql
 │   └── data.sql
 ├── docker-compose.yml       # 전체 시스템 실행
+├── .github/workflows/       # GitHub Actions 자동 배포
+│   ├── deploy.yml           # 기본 배포 워크플로우
+│   └── docker-deploy.yml    # Docker 기반 배포 워크플로우
+├── deploy.sh                # 배포 스크립트
 └── README.md
 ```
 
@@ -61,6 +65,34 @@
 ### 데이터베이스 (MySQL)
 - 업무, 프로젝트, 사용자, 리포트 등 테이블 구조
 - 관계형 데이터 모델링
+
+## 자동 배포 설정
+
+### GitHub Actions 워크플로우
+
+이 프로젝트는 GitHub Actions를 사용하여 메인 브랜치에 푸시될 때마다 자동으로 배포됩니다.
+
+#### 워크플로우 파일
+- **`.github/workflows/deploy.yml`**: 기본 배포 워크플로우
+- **`.github/workflows/docker-deploy.yml`**: Docker 기반 배포 워크플로우 (권장)
+
+#### 자동 배포 과정
+1. **백엔드 빌드**: Spring Boot 애플리케이션을 Maven으로 빌드
+2. **프론트엔드 빌드**: React 애플리케이션을 npm으로 빌드
+3. **Docker 이미지 생성**: 백엔드와 프론트엔드를 각각 Docker 이미지로 생성
+4. **컨테이너 레지스트리 푸시**: GitHub Container Registry에 이미지 업로드
+5. **자동 배포**: 메인 브랜치에 푸시된 경우에만 서버에 자동 배포
+
+#### 브랜치 전략
+- **`hmseok-dev`**: 개발 브랜치 (기능 개발 및 테스트)
+- **`main`**: 메인 브랜치 (자동 배포 트리거)
+
+#### 배포 방법
+1. `hmseok-dev` 브랜치에서 개발 완료
+2. `main` 브랜치로 Pull Request 생성
+3. 코드 리뷰 후 `main` 브랜치로 머지
+4. 자동으로 CI/CD 파이프라인 실행
+5. 서버에 자동 배포 완료
 
 ## 실행 방법
 
@@ -88,4 +120,5 @@ docker-compose up -d
 - **프론트엔드**: React 18, React Router, Axios, Tailwind CSS
 - **데이터베이스**: MySQL 8.0
 - **개발 도구**: Maven, npm, Docker
+- **CI/CD**: GitHub Actions, Docker Container Registry
 # ride-hmseok
