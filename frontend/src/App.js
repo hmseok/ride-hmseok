@@ -13,12 +13,17 @@ import Reports from './pages/reports/Reports';
 import MenuManagement from './pages/menu-management/MenuManagement';
 
 // 공통 컴포넌트들
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
+import Sidebar from './components/common/Sidebar';
+import Header from './components/common/Header';
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <div className="flex h-screen bg-gray-100">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, CogIcon, UserGroupIcon, ArrowsUpDownIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import MenuEditModal from '../../components/MenuEditModal';
-import MenuDetailModal from '../../components/MenuDetailModal';
+import MenuEditModal from '../../components/modals/MenuEditModal';
+import MenuDetailModal from '../../components/modals/MenuDetailModal';
 
 const MenuManagement = () => {
   const [menus, setMenus] = useState([]);

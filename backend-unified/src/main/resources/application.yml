@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: task-management-backend
+  
+  datasource:
+    url: jdbc:mysql://13.209.66.37:3306/business_center?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: hmseok
+    password: homin1019
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+  
+  security:
+    user:
+      name: admin
+      password: admin
+
+logging:
+  level:
+    com.taskmanagement: INFO
+    org.springframework.security: INFO
+
+jwt:
+  secret: your-secret-key-here-make-it-very-long-and-secure
+  expiration: 86400000 # 24시간
+
+# EC2 서버 MySQL 사용 (로컬 DB 사용 안함)

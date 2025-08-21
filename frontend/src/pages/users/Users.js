@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, EnvelopeIcon, UserIcon } from '@heroicons/react/24/outline';
-import { userAPI } from '../../services/api';
+import { userAPI } from '../../services/user/userAPI';
 
 const Users = () => {
   const [users, setUsers] = useState([]);

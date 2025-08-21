@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, CalendarIcon } from '@heroicons/react/24/outline';
-import ProjectDetailModal from '../../components/ProjectDetailModal';
+import ProjectDetailModal from '../../components/modals/ProjectDetailModal';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { taskAPI, userAPI, projectAPI } from '../../services/api';
-import TaskModal from '../../components/TaskModal';
-import TaskDetailModal from '../../components/TaskDetailModal';
+import { taskAPI } from '../../services/task/taskAPI';
+import { userAPI } from '../../services/user/userAPI';
+import { projectAPI } from '../../services/project/projectAPI';
+import TaskModal from '../../components/modals/TaskModal';
+import TaskDetailModal from '../../components/modals/TaskDetailModal';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
