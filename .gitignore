@@ -119,3 +119,29 @@ buildNumber.properties
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+# Dependencies
+node_modules/
+
+
+# Build outputs
+target/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.cache
+

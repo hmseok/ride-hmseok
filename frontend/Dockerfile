@@ -1,26 +1,41 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# package.json과 package-lock.json 복사
+# Copy package files for dependency caching
 COPY package*.json ./
 
-# 의존성 설치
-RUN npm ci --only=production
+# Install dependencies with optimization
+RUN npm ci --prefer-offline --no-audit --production=false
 
-# 소스 코드 복사
+# Copy source code
 COPY . .
 
-# 애플리케이션 빌드
+# Build application with production optimization
 RUN npm run build
 
-# nginx 설치 및 설정
+# Production stage
 FROM nginx:alpine
-COPY --from=0 /app/build /usr/share/nginx/html
+
+# Install necessary packages
+RUN apk add --no-cache curl
+
+# Copy built files
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# 포트 노출
-EXPOSE 3000
+# Create health check file
+RUN echo "healthy" > /usr/share/nginx/html/health
 
-# nginx 시작
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
+
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

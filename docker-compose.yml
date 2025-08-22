@@ -4,54 +4,81 @@ services:
   # MySQL 데이터베이스
   mysql:
     image: mysql:8.0
-    container_name: task-management-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-ride}-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: task_management
-      MYSQL_USER: taskuser
-      MYSQL_PASSWORD: taskpass
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_DATABASE: ${DB_NAME:-task_management}
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./database/data.sql:/docker-entrypoint-initdb.d/data.sql
     networks:
-      - task-management-network
+      - ride-network
     restart: unless-stopped
 
   # Spring Boot 백엔드
   backend:
-    build: ./backend
-    container_name: task-management-backend
+    image: ${BACKEND_IMAGE:-ride-backend:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-ride}-backend
+    build:
+      context: ./backend-unified
+      dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/task_management?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${DB_NAME:-task_management}?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-root}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-password}
     depends_on:
       - mysql
     networks:
-      - task-management-network
+      - ride-network
     restart: unless-stopped
 
   # React 프론트엔드
   frontend:
-    build: ./frontend
-    container_name: task-management-frontend
+    image: ${FRONTEND_IMAGE:-ride-frontend:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-ride}-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:80"
     environment:
-      REACT_APP_API_URL: http://localhost:8080/api
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8080/api}
     depends_on:
       - backend
     networks:
-      - task-management-network
+      - ride-network
     restart: unless-stopped
+
+  # Nginx (프로덕션 환경에서만 사용)
+  nginx:
+    image: nginx:alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-ride}-nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    restart: unless-stopped
+    networks:
+      - ride-network
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
 
 volumes:
   mysql_data:
 
 networks:
-  task-management-network:
+  ride-network:
     driver: bridge

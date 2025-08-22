@@ -122,3 +122,6 @@ docker-compose up -d
 - **개발 도구**: Maven, npm, Docker
 - **CI/CD**: GitHub Actions, Docker Container Registry
 # ride-hmseok
+## 자동 배포 테스트 - 2025-08-22 09:47:10
+## 자동 배포 테스트 재시작 - 2025-08-22 10:01:10 - v4 업데이트 후
+# EC2 서버 배포 테스트 - SSH 키 업데이트 후
