@@ -156,6 +156,6 @@ public class Task {
     }
     
     public enum TaskGroupType {
-        LARGE, MEDIUM, SMALL
+        TASK, LARGE, MEDIUM, SMALL
     }
 }

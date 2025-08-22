@@ -104,6 +104,6 @@ public class User {
     // public void setCreatedProjects(List<Project> createdProjects) { this.createdProjects = createdProjects; }
     
     public enum UserRole {
-        ADMIN, MANAGER, LEADER, SENIOR, JUNIOR, INTERN
+        ADMIN, MANAGER, USER, LEADER, SENIOR, JUNIOR, INTERN
     }
 }
