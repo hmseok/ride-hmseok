@@ -90,6 +90,7 @@ public class Project {
     // 기존 enum들
     public enum ProjectStatus {
         PLANNING("계획"),
+        ACTIVE("진행중"),
         IN_PROGRESS("진행중"),
         ON_HOLD("일시중지"),
         COMPLETED("완료"),
