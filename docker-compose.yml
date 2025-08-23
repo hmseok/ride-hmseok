@@ -4,10 +4,10 @@ services:
   # MySQL 데이터베이스
   mysql:
     image: mysql:8.0
-    container_name: ${COMPOSE_PROJECT_NAME:-ride}-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-ride}-mysql`11
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
-      MYSQL_DATABASE: ${DB_NAME:-task_management}
+      MYSQL_DATABASE: ${DB_NAME:-taskmanagement}
       MYSQL_USER: ${DB_USERNAME:-root}
       MYSQL_PASSWORD: ${DB_PASSWORD:-password}
     ports:
