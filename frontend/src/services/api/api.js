@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://13.209.66.37:8080/api';
 
 // 공통 API 호출 함수
 export const apiCall = async (method, endpoint, data = null) => {
